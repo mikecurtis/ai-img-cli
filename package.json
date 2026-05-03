@@ -1,0 +1,41 @@
+{
+  "name": "ai-img-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for AI image generation",
+  "type": "module",
+  "bin": {
+    "ai-img-cli": "./dist/ai-img-cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "start": "tsx ai-img-cli.ts",
+    "prepublishOnly": "pnpm build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "image",
+    "generation",
+    "cli",
+    "gemini"
+  ],
+  "author": "mikecurtis",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.2",
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.67",
+    "ai": "^6.0.174"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
