@@ -1,9 +1,8 @@
-import { google } from '@ai-sdk/google';
-import { generateText } from 'ai';
+import { generateText, gateway } from 'ai';
 import { writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 
-const MODEL = google('gemini-3.1-flash-image-preview');
+const MODEL = gateway('gemini-3.1-flash-image-preview');
 
 function printUsageAndExit(code: number): never {
   const msg =
