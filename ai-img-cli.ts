@@ -1,13 +1,13 @@
 import { generateText, gateway } from 'ai';
-import { writeFile } from 'node:fs/promises';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-
-const MODEL = gateway('gemini-3.1-flash-image-preview');
 
 function printUsageAndExit(code: number): never {
   const msg =
-    'Usage: ai-img-cli --output <file> [--prompt <text>]\n' +
-    '       echo "a prompt" | ai-img-cli --output <file>\n' +
+    'Usage: ai-img-cli [--output <file>] [--prompt <text>] [--thinking]\n' +
+    '       echo "a prompt" | ai-img-cli\n' +
     '       ai-img-cli -o <file> -p <text>\n';
   process.stderr.write(msg);
   process.exit(code);
@@ -28,15 +28,12 @@ async function main() {
       prompt: { type: 'string', short: 'p' },
       output: { type: 'string', short: 'o' },
       help: { type: 'boolean', short: 'h' },
+      thinking: { type: 'boolean' },
     },
     allowPositionals: false,
   });
 
   if (values.help) printUsageAndExit(0);
-  if (!values.output) {
-    process.stderr.write('Error: --output <file> is required.\n');
-    printUsageAndExit(1);
-  }
 
   const prompt = values.prompt ?? (await readStdin()).trim();
   if (!prompt) {
@@ -44,7 +41,8 @@ async function main() {
     printUsageAndExit(1);
   }
 
-  const result = await generateText({ model: MODEL, prompt });
+  const model = gateway(values.thinking ? 'gemini-3-pro-image-preview' : 'gemini-3.1-flash-image-preview');
+  const result = await generateText({ model, prompt });
 
   const image = result.files.find((f) => f.mediaType.startsWith('image/'));
   if (!image) {
@@ -53,8 +51,15 @@ async function main() {
     process.exit(2);
   }
 
-  await writeFile(values.output, image.uint8Array);
-  process.stdout.write(`Wrote ${image.uint8Array.byteLength} bytes (${image.mediaType}) to ${values.output}\n`);
+  let outputPath = values.output;
+  if (!outputPath) {
+    const ext = image.mediaType.split('/')[1] ?? 'bin';
+    const dir = await mkdtemp(join(tmpdir(), 'ai-img-'));
+    outputPath = join(dir, `output.${ext}`);
+  }
+
+  await writeFile(outputPath, image.uint8Array);
+  process.stdout.write(`Wrote ${image.uint8Array.byteLength} bytes (${image.mediaType}) to ${outputPath}\n`);
 }
 
 main().catch((err) => {
