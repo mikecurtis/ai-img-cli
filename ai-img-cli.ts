@@ -1,11 +1,11 @@
 import { generateText, gateway } from 'ai';
 import { mkdtemp, writeFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
-const { version } = createRequire(import.meta.url)('./package.json') as { version: string };
+declare const __VERSION__: string;
+const version = __VERSION__;
 
 function printUsageAndExit(code: number): never {
   const msg =
