@@ -1,8 +1,11 @@
 import { generateText, gateway } from 'ai';
 import { mkdtemp, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+
+const { version } = createRequire(import.meta.url)('./package.json') as { version: string };
 
 function printUsageAndExit(code: number): never {
   const msg =
@@ -11,6 +14,11 @@ function printUsageAndExit(code: number): never {
     '       ai-img-cli -o <file> -p <text>\n';
   process.stderr.write(msg);
   process.exit(code);
+}
+
+function printVersionAndExit(): never {
+  process.stdout.write(`${version}\n`);
+  process.exit(0);
 }
 
 async function readStdin(): Promise<string> {
@@ -29,10 +37,12 @@ async function main() {
       output: { type: 'string', short: 'o' },
       help: { type: 'boolean', short: 'h' },
       thinking: { type: 'boolean' },
+      version: { type: 'boolean', short: 'v' },
     },
     allowPositionals: false,
   });
 
+  if (values.version) printVersionAndExit();
   if (values.help) printUsageAndExit(0);
 
   const prompt = values.prompt ?? (await readStdin()).trim();
